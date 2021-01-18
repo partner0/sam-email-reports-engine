@@ -1,0 +1,56 @@
+AWSTemplateFormatVersion: '2010-09-09'
+Transform: AWS::Serverless-2016-10-31
+Description: Serverless Report engine for RDS Postgres private
+
+Globals:
+  Function:
+    Timeout: 3
+    Runtime: python3.8
+    Handler: function.index
+
+Resources:
+  getCsvDataFromPsql:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: getCsvDataFromPsql/
+      Layers:
+        - arn:aws:lambda:us-east-2:898466741470:layer:psycopg2-py38:1
+      Policies:
+        - VPCAccessPolicy: {}
+      VpcConfig:
+        SecurityGroupIds:
+          - sg-40da9920
+        SubnetIds:
+          - subnet-cc6b61a4
+          - subnet-f660208c
+          - subnet-1845ed54
+  getS3SignedURLFromString:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: getS3SignedURLFromString/
+      Policies:
+      - AmazonS3FullAccess
+  sendEmail:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: sendEmail/
+      Policies:
+      - AmazonSESFullAccess
+  sendSecureReport:
+    Type: AWS::Serverless::Function
+    Properties:
+      Timeout: 10
+      CodeUri: sendSecureReport/
+      Policies:
+        - LambdaInvokePolicy:
+            FunctionName: !Ref getCsvDataFromPsql
+        - LambdaInvokePolicy:
+            FunctionName: !Ref getS3SignedURLFromString
+        - LambdaInvokePolicy:
+            FunctionName: !Ref sendEmail
+      Environment:
+        Variables:
+          getCsvDataFromPsql: !Ref getCsvDataFromPsql
+          getS3SignedURLFromString: !Ref getS3SignedURLFromString
+          sendEmail: !Ref sendEmail
+

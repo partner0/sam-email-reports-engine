@@ -50,7 +50,7 @@ def index(event, context):
     except:
         return {
             "statusCode": 500,
-            "message": traceback.format_exc(),
+            "message": traceback.format_exc().split("\n"),
         }
     return {
         "satusCode": 200,

@@ -6,7 +6,7 @@ def arr_to_csv(arr):
     csv = ""
     for record in arr:
         for field in record:
-            csv += "\"" + field + "\","
+            csv += "\"" + str(field) + "\","
         csv = csv[:-1] + "\n"
     return csv
 
@@ -22,7 +22,7 @@ def index(event, context):
     except Exception as e:
         return {
             "statusCode": 500,
-            "message": traceback.format_exc(),
+            "message": traceback.format_exc().split("\n"),
         }
     return {
         "statusCode": 200,

@@ -1,14 +1,13 @@
 import json
 import boto3
 import traceback
+from Common import LambdaBase
 
-def index(event, context):
-    try:
-        for variable in event:
-            globals()[variable] = event[variable]
-        ses_client = boto3.client('ses', region_name = ses_region)
+class SendEmail(LambdaBase):
+    def handle(self, event, context):
+        ses_client = boto3.client('ses', region_name = event['ses_region'])
         response = ses_client.send_email(
-            Destination = { 'ToAddresses': email_to },
+            Destination = { 'ToAddresses': event['email_to'] },
             Message = 
             {
                 'Body': 
@@ -16,23 +15,20 @@ def index(event, context):
                     'Text': 
                     {
                         'Charset': "UTF-8",
-                        'Data': email_body
+                        'Data': event['email_body']
                     },
                 },
                 'Subject': 
                 {
                     'Charset': "UTF-8",
-                    'Data': email_subject
+                    'Data': event['email_subject']
                 },
             },
-            Source = email_from
+            Source = event['email_from']
         )
-    except:
         return {
-            "statusCode": 500,
-            "message": traceback.format_exc().split("\n"),
+            "statusCode": 200,
+            "ses-response": response
         }
-    return {
-        "statusCode": 200,
-        "ses-response": response
-    }
+
+index = SendEmail.get_handler()

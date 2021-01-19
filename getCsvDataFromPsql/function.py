@@ -1,30 +1,23 @@
 import json
 import psycopg2
 import traceback
+from Common import LambdaBase
 
-def arr_to_csv(arr):
-    csv = ""
-    for record in arr:
-        for field in record:
-            csv += "\"" + str(field) + "\","
-        csv = csv[:-1] + "\n"
-    return csv
-
-def index(event, context):
-    try:
-        for variable in event:
-            globals()[variable] = event[variable]
-        db_conn = psycopg2.connect("dbname={} user={} host={} password={}".format(db_name, db_user_ro, db_host, db_pass))
+class GetCsvDataFromPsql(LambdaBase):
+    def handle(self, event, context):
+        db_conn = psycopg2.connect("dbname={} user={} host={} password={}".format(event['db_name'], event['db_user_ro'], event['db_host'], event['db_pass']))
         db_cursor = db_conn.cursor()
-        db_cursor.execute(sql_query)
+        db_cursor.execute(event['sql_query'])
         result = db_cursor.fetchall()
         db_conn.close()
-    except Exception as e:
+        csv = ""
+        for record in result:
+            for field in record:
+                csv += "\"" + str(field) + "\","
+            csv = csv[:-1] + "\n"
         return {
-            "statusCode": 500,
-            "message": traceback.format_exc().split("\n"),
+            "statusCode": 200,
+            "csv": csv
         }
-    return {
-        "statusCode": 200,
-        "csv": arr_to_csv(result)
-    }
+
+index = GetCsvDataFromPsql.get_handler()

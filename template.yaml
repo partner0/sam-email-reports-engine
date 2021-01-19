@@ -7,6 +7,8 @@ Globals:
     Timeout: 3
     Runtime: python3.8
     Handler: function.index
+    Layers:
+      - arn:aws:lambda:us-east-2:166095315010:layer:Common:6
 
 Resources:
   getCsvDataFromPsql:

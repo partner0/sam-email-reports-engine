@@ -1,1 +1,3 @@
 .*/
+./sendSecureReport/test.json
+./getCsvDataFromPsql/test.json

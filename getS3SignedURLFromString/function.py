@@ -7,7 +7,7 @@ from Common import LambdaBase
 class GetS3SignedUrlFromString(LambdaBase):
     def handle(self, event, context):
         s3 = boto3.resource("s3")
-        s3_client = boto3.client("s3")
+        s3_client = boto3.client('s3', config=Config(signature_version='s3v4'))
         now = datetime.datetime.now()
         s3.Bucket(event['s3_bucket']).put_object(Key = event['s3_object_name'], Body = event['s3_object_body'].encode("utf-8"))
         url = s3_client.generate_presigned_url('get_object', Params = {'Bucket': event['s3_bucket'], 'Key': event['s3_object_name']}, ExpiresIn = event['url_expire'])
